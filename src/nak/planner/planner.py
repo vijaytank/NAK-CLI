@@ -1,16 +1,25 @@
 import json
-from typing import Dict, Any
+from typing import Dict, Any, List, Optional
 from nak.protocols.model_provider import ModelProvider, ChatRequest
+from nak.protocols.memory_store import ChangeRecord
 from nak.core.errors import AppError
 
 class Planner:
     def __init__(self, provider: ModelProvider) -> None:
         self.provider = provider
 
-    def build_system_prompt(self, workspace_root: str) -> str:
+    def build_system_prompt(self, workspace_root: str, recent_changes: Optional[List[ChangeRecord]] = None) -> str:
+        changes_context = ""
+        if recent_changes:
+            changes_context = "\n## Recent Workspace Changes:\n"
+            for change in recent_changes:
+                files = ", ".join(change.files_touched)
+                changes_context += f"- Task: {change.request} (Touched: {files}, Summary: {change.patch_summary}, Status: {change.validation_status})\n"
+
         return (
             "You are the NAK CLI Task Planner. Your job is to convert a user prompt into a structured task graph JSON.\n"
-            f"The active workspace root is '{workspace_root}'.\n\n"
+            f"The active workspace root is '{workspace_root}'.\n"
+            f"{changes_context}\n"
             "CRITICAL PATH RULES (TO PREVENT SECURITY & PLATFORM ERRORS):\n"
             "1. All paths (e.g. read_paths, write_paths) MUST be relative to the workspace root.\n"
             "2. Never use leading slashes (e.g. '/src/main.py') or backslashes. Use relative paths (e.g. 'src/main.py').\n"
@@ -37,8 +46,8 @@ class Planner:
             "Do not output any markdown formatting wrapper, any introductory text, or any closing text. Return only the raw JSON."
         )
 
-    async def plan(self, prompt: str, workspace_root: str, mode: str) -> Dict[str, Any]:
-        system_prompt = self.build_system_prompt(workspace_root)
+    async def plan(self, prompt: str, workspace_root: str, mode: str, recent_changes: Optional[List[ChangeRecord]] = None) -> Dict[str, Any]:
+        system_prompt = self.build_system_prompt(workspace_root, recent_changes)
         user_prompt = f"User request: {prompt}\nPermission mode: {mode}\nGenerate the task graph."
         
         chat_req = ChatRequest(
