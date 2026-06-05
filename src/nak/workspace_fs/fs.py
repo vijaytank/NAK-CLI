@@ -9,26 +9,40 @@ class WorkspaceFS:
         self.workspace_root = Path(workspace_root).resolve()
 
     def _guard(self, path_str: str) -> Path:
-        # Strip leading slashes/backslashes to avoid resolving to drive root
-        cleaned = path_str.lstrip("/\\")
-        
-        # Prevent workspace folder doubling (e.g. "NAK-CLI/src/main.py" -> "src/main.py")
-        workspace_folder_name = self.workspace_root.name
-        cleaned_path = Path(cleaned)
-        parts = cleaned_path.parts
-        if parts and parts[0] == workspace_folder_name:
-            cleaned_path = Path(*parts[1:])
+        # Check if the path is a true absolute path on the host system
+        # (starts with / on Unix, or starts with drive letter / UNC on Windows)
+        p = Path(path_str)
+        if p.is_absolute():
+            try:
+                resolved = p.resolve()
+                # Ensure it resolves to a location under the workspace root
+                resolved.relative_to(self.workspace_root)
+                target = resolved
+            except ValueError:
+                raise SecurityError(
+                    f"Access denied: Absolute path '{path_str}' is outside workspace root '{self.workspace_root}'"
+                )
+        else:
+            # Strip leading slashes/backslashes to avoid resolving to drive root
+            cleaned = path_str.lstrip("/\\")
             
-        # Resolve target path relative to workspace root
-        target = (self.workspace_root / cleaned_path).resolve()
-        
-        # Ensure resolved path is under the workspace root
-        try:
-            target.relative_to(self.workspace_root)
-        except ValueError:
-            raise SecurityError(
-                f"Access denied: Path '{path_str}' resolves to '{target}' which is outside workspace root '{self.workspace_root}'"
-            )
+            # Prevent workspace folder doubling (e.g. "NAK-CLI/src/main.py" -> "src/main.py")
+            workspace_folder_name = self.workspace_root.name
+            cleaned_path = Path(cleaned)
+            parts = cleaned_path.parts
+            if parts and parts[0] == workspace_folder_name:
+                cleaned_path = Path(*parts[1:])
+                
+            # Resolve target path relative to workspace root
+            target = (self.workspace_root / cleaned_path).resolve()
+            
+            # Ensure resolved path is under the workspace root
+            try:
+                target.relative_to(self.workspace_root)
+            except ValueError:
+                raise SecurityError(
+                    f"Access denied: Path '{path_str}' resolves to '{target}' which is outside workspace root '{self.workspace_root}'"
+                )
             
         # Block symlinks / junctions along the resolved path
         curr = target
