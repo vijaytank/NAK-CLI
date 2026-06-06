@@ -60,3 +60,22 @@ async def test_planner_invalid_json_raises_error(mock_provider):
     with pytest.raises(AppError) as exc_info:
         await planner.plan("fix bug", "ws", "trusted-local")
     assert exc_info.value.code == "invalid_output"
+
+def test_planner_system_prompt_with_recent_changes():
+    from nak.protocols.memory_store import ChangeRecord
+    planner = Planner(provider=MagicMock())
+    recent_changes = [
+        ChangeRecord(
+            id="c1",
+            workspace="ws",
+            request="fix test bug",
+            files_touched=["tests/test.py"],
+            patch_summary="fixed syntax error",
+            validation_status="success",
+            metadata={}
+        )
+    ]
+    prompt = planner.build_system_prompt("ws", recent_changes)
+    assert "Recent Workspace Changes:" in prompt
+    assert "- Task: fix test bug (Touched: tests/test.py, Summary: fixed syntax error, Status: success)" in prompt
+

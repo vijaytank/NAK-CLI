@@ -3,7 +3,7 @@ from typing import Dict, Any, List
 from nak.protocols.model_provider import ModelProvider, ChatRequest, ChatResponse
 from nak.core.errors import AppError
 
-class OllamaModelProvider(ModelProvider):
+class LlamaModelProvider(ModelProvider):
     def __init__(self, base_url: str, model_name: str, timeout_seconds: int = 300) -> None:
         self.base_url = base_url.rstrip("/")
         self.model_name = model_name
@@ -11,7 +11,7 @@ class OllamaModelProvider(ModelProvider):
 
     @property
     def name(self) -> str:
-        return "ollama"
+        return "llama"
 
     @property
     def version(self) -> str:
@@ -20,7 +20,6 @@ class OllamaModelProvider(ModelProvider):
     async def health(self) -> bool:
         try:
             async with httpx.AsyncClient(timeout=5.0) as client:
-                # v1/models is standard for OpenAI-compatible endpoint
                 response = await client.get(f"{self.base_url}/models")
                 return response.status_code == 200
         except Exception:
@@ -67,7 +66,7 @@ class OllamaModelProvider(ModelProvider):
                     raise AppError(
                         component="model_adapter",
                         code="invalid_request" if response.status_code == 400 else "internal_error",
-                        message=f"Ollama returned error status code: {response.status_code}. Response: {response.text}",
+                        message=f"Llama returned error status code: {response.status_code}. Response: {response.text}",
                         recoverable=False
                     )
                     
@@ -87,14 +86,14 @@ class OllamaModelProvider(ModelProvider):
             raise AppError(
                 component="model_adapter",
                 code="timeout",
-                message=f"Connection to Ollama timed out: {str(e)}",
+                message=f"Connection to Llama timed out: {str(e)}",
                 recoverable=True
             )
         except (httpx.ConnectError, httpx.ConnectTimeout) as e:
             raise AppError(
                 component="model_adapter",
                 code="model_unavailable",
-                message=f"Ollama server is unavailable: {str(e)}",
+                message=f"Llama server is unavailable: {str(e)}",
                 recoverable=True
             )
         except AppError:
@@ -103,6 +102,6 @@ class OllamaModelProvider(ModelProvider):
             raise AppError(
                 component="model_adapter",
                 code="internal_error",
-                message=f"Unexpected error communicating with Ollama: {str(e)}",
+                message=f"Unexpected error communicating with Llama: {str(e)}",
                 recoverable=False
             )

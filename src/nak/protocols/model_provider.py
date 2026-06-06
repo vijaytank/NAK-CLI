@@ -26,6 +26,9 @@ class ModelProvider(Protocol):
     async def health(self) -> bool:
         ...
 
+    async def list_models(self) -> List[str]:
+        ...
+
     @property
     def name(self) -> str:
         ...

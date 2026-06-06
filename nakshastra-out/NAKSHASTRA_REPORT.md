@@ -1,57 +1,57 @@
 # NakshAstra Architectural Report
 
-> **Generated at**: NAK-CLI mapping
+> **Generated at**: Antigravity IDE mapping
 
 ## 🏆 High-Impact Files
 These files have the highest centrality (PageRank) and are critical to the system architecture.
 
-- [src/nak/core/errors.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/core/errors.py) (Score: 0.2145)
-- [src/nak/audit/audit_log.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/audit/audit_log.py) (Score: 0.1956)
-- [src/nak/cli/main.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/cli/main.py) (Score: 0.1909)
-- [src/nak/mcp_client/base.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/mcp_client/base.py) (Score: 0.1835)
-- [src/nak/validator/autodetect.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/validator/autodetect.py) (Score: 0.1821)
-- [src/nak/planner/planner.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/planner/planner.py) (Score: 0.1812)
-- [src/nak/model_adapter/providers/ollama.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/model_adapter/providers/ollama.py) (Score: 0.1805)
-- [src/nak/patch_engine/engine.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/patch_engine/engine.py) (Score: 0.1803)
-- [src/nak/scheduler/scheduler.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/scheduler/scheduler.py) (Score: 0.1800)
-- [src/nak/workspace_fs/fs.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/workspace_fs/fs.py) (Score: 0.1796)
+- [src/nak/core/errors.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/core/errors.py) (Score: 0.2113)
+- [src/nak/audit/audit_log.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/audit/audit_log.py) (Score: 0.1854)
+- [src/nak/cli/main.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/cli/main.py) (Score: 0.1798)
+- [src/nak/protocols/model_provider.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/protocols/model_provider.py) (Score: 0.1776)
+- [src/nak/validator/autodetect.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/validator/autodetect.py) (Score: 0.1759)
+- [src/nak/mcp_client/base.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/mcp_client/base.py) (Score: 0.1747)
+- [src/nak/scheduler/scheduler.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/scheduler/scheduler.py) (Score: 0.1739)
+- [src/nak/planner/planner.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/planner/planner.py) (Score: 0.1737)
+- [src/nak/workspace_fs/fs.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/workspace_fs/fs.py) (Score: 0.1736)
+- [src/nak/patch_engine/engine.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/patch_engine/engine.py) (Score: 0.1717)
 
 ## 🧬 High-Impact Symbols
 These class and function abstractions are the key logical hubs of the system.
 
 - [TaskResult](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/scheduler/scheduler.py#L15-L18) (class in `src/nak/scheduler/scheduler.py` · Score: 1.0000)
-- [SecurityError](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/workspace_fs/fs.py#L4-L5) (class in `src/nak/workspace_fs/fs.py` · Score: 0.9416)
-- [_guard](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/workspace_fs/fs.py#L11-L40) (method in `src/nak/workspace_fs/fs.py` · Score: 0.9058)
-- [ChangeRecord](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/protocols/memory_store.py#L5-L12) (class in `src/nak/protocols/memory_store.py` · Score: 0.8516)
-- [__init__](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/core/errors.py#L4-L17) (method in `src/nak/core/errors.py` · Score: 0.7427)
-- [name](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/protocols/model_provider.py#L30-L31) (function in `src/nak/protocols/model_provider.py` · Score: 0.6873)
-- [PatchRequest](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/protocols/patch_engine.py#L5-L10) (class in `src/nak/protocols/patch_engine.py` · Score: 0.6112)
-- [ChatRequest](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/protocols/model_provider.py#L5-L12) (class in `src/nak/protocols/model_provider.py` · Score: 0.5539)
-- [resolve_executable](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/validator/autodetect.py#L4-L27) (function in `src/nak/validator/autodetect.py` · Score: 0.5091)
-- [connect](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/protocols/mcp_transport.py#L13-L14) (method in `src/nak/protocols/mcp_transport.py` · Score: 0.4888)
+- [ChangeRecord](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/protocols/memory_store.py#L5-L12) (class in `src/nak/protocols/memory_store.py` · Score: 0.9764)
+- [__init__](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/core/errors.py#L4-L17) (method in `src/nak/core/errors.py` · Score: 0.9633)
+- [SecurityError](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/workspace_fs/fs.py#L4-L5) (class in `src/nak/workspace_fs/fs.py` · Score: 0.9434)
+- [_guard](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/workspace_fs/fs.py#L11-L54) (method in `src/nak/workspace_fs/fs.py` · Score: 0.9171)
+- [name](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/protocols/model_provider.py#L33-L34) (function in `src/nak/protocols/model_provider.py` · Score: 0.7991)
+- [chat](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/protocols/model_provider.py#L23-L24) (method in `src/nak/protocols/model_provider.py` · Score: 0.7959)
+- [ChatRequest](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/protocols/model_provider.py#L5-L12) (class in `src/nak/protocols/model_provider.py` · Score: 0.7864)
+- [health](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/protocols/model_provider.py#L26-L27) (method in `src/nak/protocols/model_provider.py` · Score: 0.7133)
+- [ChatResponse](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/protocols/model_provider.py#L15-L20) (class in `src/nak/protocols/model_provider.py` · Score: 0.6890)
 
 ## 📦 Module Communities (Louvain)
 The following clusters represent tightly-coupled functional modules detected in the graph.
 
 ### Module 1: src Cluster
 - **Size**: 13 nodes
-- **Key Files**: tests/unit/test_provider_registry.py, src/nak/model_adapter/providers/__init__.py, src/nak/core/session.py, src/nak/core/__init__.py, tests/unit/test_errors.py...
+- **Key Files**: tests/unit/test_cli_guardrails.py, tests/unit/test_ollama_adapter.py, src/nak/model_adapter/providers/__init__.py, src/nak/model_adapter/providers/ollama.py, tests/unit/test_config_commands.py...
 
 ### Module 2: src Cluster
-- **Size**: 7 nodes
-- **Key Files**: src/nak/protocols/memory_store.py, src/nak/memory/transaction.py, tests/unit/test_transaction.py, src/nak/audit/audit_log.py, src/nak/memory/sqlite_store.py...
+- **Size**: 11 nodes
+- **Key Files**: src/nak/protocols/validator.py, src/nak/mcp_client/base.py, src/nak/protocols/__init__.py, src/nak/mcp_client/__init__.py, src/nak/patch_engine/engine.py...
 
 ### Module 3: src Cluster
-- **Size**: 7 nodes
-- **Key Files**: src/nak/mcp_client/__init__.py, src/nak/protocols/mcp_transport.py, tests/unit/test_mcp_client.py, src/nak/mcp_client/base.py, src/nak/protocols/approval_policy.py...
+- **Size**: 9 nodes
+- **Key Files**: tests/unit/test_provider_registry.py, src/nak/protocols/memory_store.py, tests/unit/test_planner.py, src/nak/cli/repl.py, src/nak/planner/planner.py...
 
 ### Module 4: src Cluster
-- **Size**: 4 nodes
-- **Key Files**: src/nak/patch_engine/engine.py, tests/unit/test_patch_engine.py, src/nak/patch_engine/__init__.py, src/nak/protocols/patch_engine.py
+- **Size**: 6 nodes
+- **Key Files**: src/nak/audit/audit_log.py, src/nak/memory/transaction.py, tests/unit/test_transaction.py, src/nak/memory/__init__.py, src/nak/audit/__init__.py...
 
 ### Module 5: src Cluster
 - **Size**: 3 nodes
-- **Key Files**: src/nak/workspace_fs/__init__.py, tests/unit/test_workspace_fs.py, src/nak/workspace_fs/fs.py
+- **Key Files**: src/nak/model_adapter/__init__.py, tests/unit/test_circuit_breaker.py, src/nak/model_adapter/circuit_breaker.py
 
 
 ## ⚠️ Blast Radius Warnings
