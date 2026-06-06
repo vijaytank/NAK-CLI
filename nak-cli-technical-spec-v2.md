@@ -145,7 +145,7 @@ MCP is the primary context and tool layer. The protocol separates prompts, resou
 
 ### MCP transport strategy
 
-`stdio` is the default for local low-latency integration, while HTTP is the next planned transport and gRPC remains future-compatible. Transport differences must not leak into planner, scheduler, or workspace logic.[cite:16][cite:20]
+Both `stdio` and HTTP transports are implemented and fully supported for local and remote integration, while gRPC remains future-compatible. Transport differences must not leak into planner, scheduler, or workspace logic.[cite:16][cite:20]
 
 ## File tools
 

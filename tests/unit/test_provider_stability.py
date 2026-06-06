@@ -6,7 +6,6 @@ from typer.testing import CliRunner
 from nak.cli.main import app
 from nak.model_adapter.providers.ollama import OllamaModelProvider
 from nak.model_adapter.providers.llama import LlamaModelProvider
-from nak.core.errors import AppError
 
 runner = CliRunner()
 

@@ -17,6 +17,7 @@ from nak.protocols.model_provider import ChatRequest, ModelProvider
 from nak.scheduler.scheduler import Scheduler, Task, TaskResult
 from nak.workspace_fs.fs import WorkspaceFS
 from nak.protocols.memory_store import ChangeRecord
+from nak.mcp_client.base import StdioMcpClient, HttpMcpClient
 
 
 class REPLState:
@@ -26,6 +27,7 @@ class REPLState:
         self.cached_plan: Optional[Dict[str, Any]] = None
         self.workspace_root: str = workspace_root
         self.auto_execute_cached: bool = False
+        self.mcp_clients: Dict[str, Any] = {}
 
 def cycle_mode(current: str) -> str:
     modes = ["chat", "plan", "code"]
@@ -328,6 +330,33 @@ async def run_repl(workspace_root: str, mode: str, provider: Optional[ModelProvi
         click.echo(f"Warning: Active provider {provider.name} is offline. Please make sure your provider is running and connected.")
         
     planner = Planner(provider)
+
+    # Load and connect to configured MCP servers on startup
+    mcp_config_str = await store.get_config("mcp_servers")
+    if mcp_config_str:
+        try:
+            mcp_configs = json.loads(mcp_config_str)
+            for name, cfg in mcp_configs.items():
+                mcp_type = cfg.get("type", "stdio")
+                client: Any
+                if mcp_type == "stdio":
+                    cmd = cfg.get("command")
+                    args = cfg.get("args", [])
+                    client = StdioMcpClient(cmd, args)
+                else:
+                    url = cfg.get("url")
+                    client = HttpMcpClient(url)
+                
+                click.echo(f"Connecting to MCP server '{name}' ({mcp_type})...")
+                try:
+                    await asyncio.wait_for(client.connect(), timeout=5.0)
+                    state.mcp_clients[name] = client
+                    click.echo(f"  Connected to '{name}' successfully.")
+                except Exception as e:
+                    state.mcp_clients[name] = client  # Still store it so it displays Disconnected
+                    click.echo(f"  Failed to connect to '{name}': {str(e)}")
+        except Exception as e:
+            click.echo(f"Warning: Failed to load MCP configurations: {str(e)}")
     
     # Setup prompt-toolkit session with keybindings and bottom toolbar
     kb = KeyBindings()
@@ -342,18 +371,27 @@ async def run_repl(workspace_root: str, mode: str, provider: Optional[ModelProvi
             state.mode = cycle_mode(state.mode)
             event.app.invalidate()
             
-    commands_completer = WordCompleter(["/chat", "/plan", "/code", "/new", "/clear", "/help"])
+    commands_completer = WordCompleter(["/chat", "/plan", "/code", "/new", "/clear", "/help", "/mcp"])
+    
+    def get_rprompt():
+        connected_count = len([
+            c for c in state.mcp_clients.values() 
+            if (isinstance(c, StdioMcpClient) and c.proc and c.proc.returncode is None) 
+            or (isinstance(c, HttpMcpClient) and c.is_connected)
+        ])
+        return HTML(f"<style bg='ansigray' fg='ansiblack'> MCP: {connected_count} </style>")
     
     session: PromptSession[Any] = PromptSession(
         key_bindings=kb,
         bottom_toolbar=lambda: HTML(f"<b>[MODE: {state.mode.upper()}]</b>"),
+        rprompt=get_rprompt,
         completer=commands_completer,
         complete_while_typing=True
     )
     
     click.echo("NAK CLI REPL Shell. Press Ctrl+C or Ctrl+D to exit.")
     click.echo("Press Shift+Tab to switch modes between CODE, PLAN, and CHAT.")
-    click.echo("Available slash commands: /chat, /plan, /code, /new, /clear, /help")
+    click.echo("Available slash commands: /chat, /plan, /code, /new, /clear, /help, /mcp")
     
     while True:
         try:
@@ -374,7 +412,7 @@ async def run_repl(workspace_root: str, mode: str, provider: Optional[ModelProvi
                 
             # Parse slash command
             cmd_name, should_continue = parse_slash_command(user_input)
-            if not should_continue:
+            if not should_continue and cmd_name is not None:
                 parts = cmd_name.split(None, 1)
                 cmd_base = parts[0] if parts else ""
                 
@@ -395,6 +433,127 @@ async def run_repl(workspace_root: str, mode: str, provider: Optional[ModelProvi
                 elif cmd_base == "code":
                     state.mode = "code"
                     click.echo("Switched to CODE mode.")
+                elif cmd_base == "mcp":
+                    mcp_args = parts[1].split() if len(parts) > 1 else []
+                    if not mcp_args:
+                        if not state.mcp_clients:
+                            click.echo("No MCP servers configured.")
+                            click.echo("Usage:")
+                            click.echo("  /mcp add <name> stdio <command> [args...]")
+                            click.echo("  /mcp add <name> http <url>")
+                            click.echo("  /mcp reconnect <name>")
+                            click.echo("  /mcp remove <name>")
+                        else:
+                            click.echo("Configured MCP Servers:")
+                            for name, client in state.mcp_clients.items():
+                                mcp_type = "stdio" if isinstance(client, StdioMcpClient) else "http"
+                                status = "Disconnected"
+                                if mcp_type == "stdio":
+                                    if client.proc and client.proc.returncode is None:
+                                        status = "Connected"
+                                else:
+                                    if client.is_connected:
+                                        status = "Connected"
+                                click.echo(f"  - {name} ({mcp_type}): {status}")
+                                if status == "Connected" and client.tools:
+                                    click.echo("    Tools:")
+                                    for t in client.tools:
+                                        t_name = t.get("name", "unknown")
+                                        t_desc = t.get("description", "")
+                                        if len(t_desc) > 80:
+                                            t_desc = t_desc[:77] + "..."
+                                        click.echo(f"      * {t_name}: {t_desc}")
+                    elif mcp_args[0] == "add":
+                        if len(mcp_args) < 4:
+                            click.echo("Error: Invalid arguments.")
+                            click.echo("Usage:")
+                            click.echo("  /mcp add <name> stdio <command> [args...]")
+                            click.echo("  /mcp add <name> http <url>")
+                        else:
+                            name = mcp_args[1]
+                            mcp_type = mcp_args[2]
+                            if mcp_type not in ("stdio", "http"):
+                                click.echo("Error: type must be 'stdio' or 'http'.")
+                            else:
+                                if mcp_type == "stdio":
+                                    cmd = mcp_args[3]
+                                    args = mcp_args[4:]
+                                    new_cfg = {"type": "stdio", "command": cmd, "args": args}
+                                    client = StdioMcpClient(cmd, args)
+                                else:
+                                    url = mcp_args[3]
+                                    new_cfg = {"type": "http", "url": url}
+                                    client = HttpMcpClient(url)
+                                
+                                # Save to DB
+                                mcp_config_str = await store.get_config("mcp_servers")
+                                mcp_configs = json.loads(mcp_config_str) if mcp_config_str else {}
+                                mcp_configs[name] = new_cfg
+                                await store.set_config("mcp_servers", json.dumps(mcp_configs))
+                                
+                                # Disconnect old if exists
+                                if name in state.mcp_clients:
+                                    await state.mcp_clients[name].close()
+                                
+                                click.echo(f"Connecting to MCP server '{name}' ({mcp_type})...")
+                                try:
+                                    await asyncio.wait_for(client.connect(), timeout=5.0)
+                                    state.mcp_clients[name] = client
+                                    click.echo(f"Successfully configured and connected to '{name}'.")
+                                except Exception as e:
+                                    state.mcp_clients[name] = client
+                                    click.echo(f"Configured but failed to connect to '{name}': {str(e)}")
+                    elif mcp_args[0] == "remove":
+                        if len(mcp_args) < 2:
+                            click.echo("Usage: /mcp remove <name>")
+                        else:
+                            name = mcp_args[1]
+                            mcp_config_str = await store.get_config("mcp_servers")
+                            mcp_configs = json.loads(mcp_config_str) if mcp_config_str else {}
+                            if name in mcp_configs:
+                                del mcp_configs[name]
+                                await store.set_config("mcp_servers", json.dumps(mcp_configs))
+                            if name in state.mcp_clients:
+                                await state.mcp_clients[name].close()
+                                del state.mcp_clients[name]
+                            click.echo(f"Removed MCP server '{name}'.")
+                    elif mcp_args[0] == "reconnect":
+                        if len(mcp_args) < 2:
+                            click.echo("Usage: /mcp reconnect <name>")
+                        else:
+                            name = mcp_args[1]
+                            mcp_config_str = await store.get_config("mcp_servers")
+                            mcp_configs = json.loads(mcp_config_str) if mcp_config_str else {}
+                            if name not in mcp_configs:
+                                click.echo(f"Error: MCP server '{name}' is not configured.")
+                            else:
+                                cfg = mcp_configs[name]
+                                mcp_type = cfg.get("type", "stdio")
+                                if mcp_type == "stdio":
+                                    cmd = cfg.get("command")
+                                    args = cfg.get("args", [])
+                                    client = StdioMcpClient(cmd, args)
+                                else:
+                                    url = cfg.get("url")
+                                    client = HttpMcpClient(url)
+                                
+                                # Close old if exists
+                                if name in state.mcp_clients:
+                                    try:
+                                        await state.mcp_clients[name].close()
+                                    except Exception:
+                                        pass
+                                
+                                click.echo(f"Reconnecting to MCP server '{name}' ({mcp_type})...")
+                                try:
+                                    await asyncio.wait_for(client.connect(), timeout=5.0)
+                                    state.mcp_clients[name] = client
+                                    click.echo(f"Successfully reconnected to '{name}'.")
+                                except Exception as e:
+                                    state.mcp_clients[name] = client
+                                    click.echo(f"Failed to reconnect to '{name}': {str(e)}")
+                    else:
+                        click.echo("Unknown MCP subcommand. Use '/mcp', '/mcp add ...', '/mcp reconnect ...', or '/mcp remove ...'")
                 elif cmd_base in ["", "help"]:
                     click.echo("Available slash commands:")
                     click.echo("  /chat  - Switch to CHAT mode")
@@ -402,6 +561,7 @@ async def run_repl(workspace_root: str, mode: str, provider: Optional[ModelProvi
                     click.echo("  /code  - Switch to CODE mode")
                     click.echo("  /new   - Start a new session, clear cached plan, switch to CHAT mode")
                     click.echo("  /clear - Clear the screen and clear cached plan")
+                    click.echo("  /mcp   - Manage/configure MCP connections")
                     click.echo("  /help  - Show this help message")
                 else:
                     click.echo(f"Unknown slash command: /{cmd_base}")
@@ -424,18 +584,101 @@ async def run_repl(workspace_root: str, mode: str, provider: Optional[ModelProvi
                 full_prompt = user_input
                 if formatted_history:
                     full_prompt = f"Chat History:\n{formatted_history}\nUser: {user_input}"
+                
+                # Retrieve and format connected MCP tools
+                mcp_tools = []
+                for client in state.mcp_clients.values():
+                    status = "Disconnected"
+                    if isinstance(client, StdioMcpClient):
+                        if client.proc and client.proc.returncode is None:
+                            status = "Connected"
+                    else:
+                        if client.is_connected:
+                            status = "Connected"
+                    
+                    if status == "Connected":
+                        for t in client.tools:
+                            mcp_tools.append({
+                                "type": "function",
+                                "function": {
+                                    "name": t.get("name"),
+                                    "description": t.get("description", ""),
+                                    "parameters": t.get("inputSchema", {"type": "object", "properties": {}})
+                                }
+                            })
+                
+                system_prompt = "You are a helpful programming assistant."
+                if mcp_tools:
+                    tool_names_list = []
+                    for t in mcp_tools:
+                        func = t.get("function")
+                        if isinstance(func, dict):
+                            name = func.get("name")
+                            if name:
+                                tool_names_list.append(name)
+                    tool_names = ", ".join(tool_names_list)
+                    system_prompt += (
+                        f" You are connected to the local workspace and have access to Model Context Protocol (MCP) tools: {tool_names}."
+                        " You should actively use these tools to read files, search the codebase, check definitions, or inspect code structure"
+                        " to answer the user's questions accurately. If you need to look at code or search the project, call the relevant tool."
+                    )
                     
                 click.echo("Generating response...")
                 chat_req = ChatRequest(
-                    system="You are a helpful programming assistant.",
+                    system=system_prompt,
                     prompt=full_prompt,
                     response_format=None,
-                    tools=[],
+                    tools=mcp_tools,
                     max_tokens=2048,
                     temperature=0.7,
                     metadata={}
                 )
                 response = await provider.chat(chat_req)
+                
+                # Tool calling loop
+                while response.tool_calls:
+                    for tc in response.tool_calls:
+                        func = tc.get("function", {})
+                        func_name = func.get("name")
+                        func_args_str = func.get("arguments", "{}")
+                        try:
+                            func_args = json.loads(func_args_str) if isinstance(func_args_str, str) else func_args_str
+                        except Exception:
+                            func_args = {}
+                        
+                        click.echo(f"Executing tool call: {func_name}({func_args})...")
+                        
+                        target_client = None
+                        for client in state.mcp_clients.values():
+                            if any(t.get("name") == func_name for t in client.tools):
+                                target_client = client
+                                break
+                        
+                        if target_client:
+                            tc_res = await target_client.call_tool(func_name, func_args)
+                            if tc_res.success:
+                                tool_result_str = json.dumps(tc_res.result)
+                            else:
+                                tool_result_str = f"Error calling tool: {tc_res.error_message}"
+                        else:
+                            tool_result_str = f"Error: Tool '{func_name}' not found among connected MCP clients."
+                        
+                        click.echo(f"Tool Result: {tool_result_str}")
+                        full_prompt += f"\n\n[Assistant requested tool: {func_name} with arguments {func_args}]"
+                        full_prompt += f"\n[Tool Result]: {tool_result_str}"
+                    
+                    click.echo("Generating follow-up response...")
+                    chat_req = ChatRequest(
+                        system=system_prompt,
+                        prompt=full_prompt,
+                        response_format=None,
+                        tools=mcp_tools,
+                        max_tokens=2048,
+                        temperature=0.7,
+                        metadata={}
+                    )
+                    response = await provider.chat(chat_req)
+                
                 click.echo(response.content)
                 await store.save_chat_message(state.session_id, "assistant", response.content)
                 
@@ -482,4 +725,10 @@ async def run_repl(workspace_root: str, mode: str, provider: Optional[ModelProvi
         except Exception as e:
             click.echo(f"Error: {str(e)}")
             
+    # Cleanup all connected MCP clients
+    for client in list(state.mcp_clients.values()):
+        try:
+            await client.close()
+        except Exception:
+            pass
     store.close()
