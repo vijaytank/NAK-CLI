@@ -258,6 +258,7 @@ async def test_stdio_mcp_client_connect_and_call(monkeypatch):
     
     # Mock create_subprocess_exec with synchronous mocked methods for stdin
     mock_proc = AsyncMock()
+    mock_proc.terminate = Mock()
     mock_proc.stdin = Mock()
     mock_proc.stdin.write = Mock()
     mock_proc.stdin.drain = AsyncMock()

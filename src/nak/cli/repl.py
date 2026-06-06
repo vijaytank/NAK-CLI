@@ -338,6 +338,7 @@ async def run_repl(workspace_root: str, mode: str, provider: Optional[ModelProvi
             mcp_configs = json.loads(mcp_config_str)
             for name, cfg in mcp_configs.items():
                 mcp_type = cfg.get("type", "stdio")
+                client: Any
                 if mcp_type == "stdio":
                     cmd = cfg.get("command")
                     args = cfg.get("args", [])
@@ -411,7 +412,7 @@ async def run_repl(workspace_root: str, mode: str, provider: Optional[ModelProvi
                 
             # Parse slash command
             cmd_name, should_continue = parse_slash_command(user_input)
-            if not should_continue:
+            if not should_continue and cmd_name is not None:
                 parts = cmd_name.split(None, 1)
                 cmd_base = parts[0] if parts else ""
                 
@@ -608,7 +609,14 @@ async def run_repl(workspace_root: str, mode: str, provider: Optional[ModelProvi
                 
                 system_prompt = "You are a helpful programming assistant."
                 if mcp_tools:
-                    tool_names = ", ".join([t["function"]["name"] for t in mcp_tools])
+                    tool_names_list = []
+                    for t in mcp_tools:
+                        func = t.get("function")
+                        if isinstance(func, dict):
+                            name = func.get("name")
+                            if name:
+                                tool_names_list.append(name)
+                    tool_names = ", ".join(tool_names_list)
                     system_prompt += (
                         f" You are connected to the local workspace and have access to Model Context Protocol (MCP) tools: {tool_names}."
                         " You should actively use these tools to read files, search the codebase, check definitions, or inspect code structure"
