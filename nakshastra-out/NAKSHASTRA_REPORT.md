@@ -5,33 +5,53 @@
 ## 🏆 High-Impact Files
 These files have the highest centrality (PageRank) and are critical to the system architecture.
 
-- [tests/unit/test_repl.py](file:///E:/Projects/Nak-cli/NAK-CLI/tests/unit/test_repl.py) (Score: 0.5096)
-- [tests/unit/test_provider_stability.py](file:///E:/Projects/Nak-cli/NAK-CLI/tests/unit/test_provider_stability.py) (Score: 0.5096)
+- [src/nak/core/errors.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/core/errors.py) (Score: 0.2082)
+- [src/nak/audit/audit_log.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/audit/audit_log.py) (Score: 0.1859)
+- [src/nak/cli/main.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/cli/main.py) (Score: 0.1805)
+- [src/nak/mcp_client/base.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/mcp_client/base.py) (Score: 0.1798)
+- [src/nak/validator/autodetect.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/validator/autodetect.py) (Score: 0.1762)
+- [src/nak/protocols/model_provider.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/protocols/model_provider.py) (Score: 0.1758)
+- [src/nak/scheduler/scheduler.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/scheduler/scheduler.py) (Score: 0.1742)
+- [src/nak/planner/planner.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/planner/planner.py) (Score: 0.1739)
+- [src/nak/workspace_fs/fs.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/workspace_fs/fs.py) (Score: 0.1738)
+- [src/nak/patch_engine/engine.py](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/patch_engine/engine.py) (Score: 0.1721)
 
 ## 🧬 High-Impact Symbols
 These class and function abstractions are the key logical hubs of the system.
 
-- [get_config_mock](file:///E:/Projects/Nak-cli/NAK-CLI/tests/unit/test_repl.py#L227-L234) (function in `tests/unit/test_repl.py` · Score: 1.0000)
-- [test_cycle_mode](file:///E:/Projects/Nak-cli/NAK-CLI/tests/unit/test_repl.py#L9-L20) (function in `tests/unit/test_repl.py` · Score: 0.5405)
-- [test_compress_prompt](file:///E:/Projects/Nak-cli/NAK-CLI/tests/unit/test_repl.py#L22-L27) (function in `tests/unit/test_repl.py` · Score: 0.5405)
-- [test_parse_slash_command](file:///E:/Projects/Nak-cli/NAK-CLI/tests/unit/test_repl.py#L29-L45) (function in `tests/unit/test_repl.py` · Score: 0.5405)
-- [test_repl_state_properties](file:///E:/Projects/Nak-cli/NAK-CLI/tests/unit/test_repl.py#L47-L53) (function in `tests/unit/test_repl.py` · Score: 0.5405)
-- [test_repl_backtab_transition](file:///E:/Projects/Nak-cli/NAK-CLI/tests/unit/test_repl.py#L55-L66) (function in `tests/unit/test_repl.py` · Score: 0.5405)
-- [test_run_repl_missing_provider](file:///E:/Projects/Nak-cli/NAK-CLI/tests/unit/test_repl.py#L69-L81) (function in `tests/unit/test_repl.py` · Score: 0.5405)
-- [test_slash_command_behavior](file:///E:/Projects/Nak-cli/NAK-CLI/tests/unit/test_repl.py#L83-L135) (function in `tests/unit/test_repl.py` · Score: 0.5405)
-- [test_execute_task_graph_real](file:///E:/Projects/Nak-cli/NAK-CLI/tests/unit/test_repl.py#L139-L212) (function in `tests/unit/test_repl.py` · Score: 0.5405)
-- [test_run_repl_custom_timeout](file:///E:/Projects/Nak-cli/NAK-CLI/tests/unit/test_repl.py#L216-L248) (function in `tests/unit/test_repl.py` · Score: 0.5405)
+- [TaskResult](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/scheduler/scheduler.py#L15-L18) (class in `src/nak/scheduler/scheduler.py` · Score: 1.0000)
+- [ChangeRecord](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/protocols/memory_store.py#L5-L12) (class in `src/nak/protocols/memory_store.py` · Score: 0.9736)
+- [__init__](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/core/errors.py#L4-L17) (method in `src/nak/core/errors.py` · Score: 0.9531)
+- [SecurityError](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/workspace_fs/fs.py#L4-L5) (class in `src/nak/workspace_fs/fs.py` · Score: 0.9439)
+- [_guard](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/workspace_fs/fs.py#L11-L54) (method in `src/nak/workspace_fs/fs.py` · Score: 0.9172)
+- [name](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/protocols/model_provider.py#L33-L34) (function in `src/nak/protocols/model_provider.py` · Score: 0.9025)
+- [chat](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/protocols/model_provider.py#L23-L24) (method in `src/nak/protocols/model_provider.py` · Score: 0.7845)
+- [ChatRequest](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/protocols/model_provider.py#L5-L12) (class in `src/nak/protocols/model_provider.py` · Score: 0.7774)
+- [health](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/protocols/model_provider.py#L26-L27) (method in `src/nak/protocols/model_provider.py` · Score: 0.7224)
+- [ChatResponse](file:///E:/Projects/Nak-cli/NAK-CLI/src/nak/protocols/model_provider.py#L15-L20) (class in `src/nak/protocols/model_provider.py` · Score: 0.6815)
 
 ## 📦 Module Communities (Louvain)
 The following clusters represent tightly-coupled functional modules detected in the graph.
 
-### Module 1: tests Cluster
-- **Size**: 1 nodes
-- **Key Files**: tests/unit/test_repl.py
+### Module 1: src Cluster
+- **Size**: 9 nodes
+- **Key Files**: src/nak/planner/planner.py, tests/unit/test_ollama_adapter.py, src/nak/core/session.py, tests/unit/test_planner.py, src/nak/core/__init__.py...
 
-### Module 2: tests Cluster
-- **Size**: 1 nodes
-- **Key Files**: tests/unit/test_provider_stability.py
+### Module 2: src Cluster
+- **Size**: 9 nodes
+- **Key Files**: src/nak/mcp_client/__init__.py, src/nak/mcp_client/base.py, tests/unit/test_mcp_client.py, src/nak/scheduler/scheduler.py, tests/unit/test_scheduler.py...
+
+### Module 3: src Cluster
+- **Size**: 8 nodes
+- **Key Files**: src/nak/model_adapter/providers/llama.py, src/nak/cli/main.py, tests/unit/test_config_commands.py, tests/unit/test_provider_stability.py, src/nak/model_adapter/providers/__init__.py...
+
+### Module 4: src Cluster
+- **Size**: 7 nodes
+- **Key Files**: src/nak/protocols/patch_engine.py, tests/unit/test_patch_engine.py, src/nak/protocols/__init__.py, src/nak/patch_engine/__init__.py, src/nak/protocols/approval_policy.py...
+
+### Module 5: src Cluster
+- **Size**: 6 nodes
+- **Key Files**: src/nak/protocols/model_provider.py, tests/unit/test_circuit_breaker.py, src/nak/model_adapter/__init__.py, tests/unit/test_provider_registry.py, src/nak/model_adapter/registry.py...
 
 
 ## ⚠️ Blast Radius Warnings

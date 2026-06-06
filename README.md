@@ -20,19 +20,23 @@ NAK is designed around a **one-model-hot runtime** that parallelizes non-model w
 
 ## 📦 Installation
 
-### 1. PowerShell One-Liner (Windows)
+### 1. NAK CLI Installation
 ```powershell
+# Windows (PowerShell)
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex; uv tool install nak-cli"
-```
 
-### 2. Cross-Platform (uv / pip)
-```bash
-# Using uv (recommended)
+# Cross-Platform (uv / pip)
 uv tool install nak-cli
-
-# Using pip
+# or
 pip install nak-cli
 ```
+
+### 2. Codebase Context Engine (NakshAstraMCP)
+To enable AST-aware local repository indexing and fast semantic search, install `nakshastramcp` using `uv`:
+```powershell
+uv tool install https://github.com/vijaytank/NakshAstraMCP-Docs/releases/download/v3.19.0/nakshastramcp-3.19.0-cp313-cp313-win_amd64.whl --force
+```
+For full details on client configuration and platform support, refer to the [NakshAstraMCP-Docs](https://github.com/vijaytank/NakshAstraMCP-Docs) repository.
 
 ### 3. From Source (Development)
 ```bash
@@ -41,6 +45,12 @@ cd NAK-CLI
 uv sync
 uv run pytest
 ```
+
+---
+
+## 📖 Complete Documentation Guides
+*   For a detailed onboarding guide, refer to the [Setup Guide](SETUP_GUIDE.md).
+*   For a full command and slash command reference, refer to the [Commands Reference](COMMANDS.md).
 
 ---
 

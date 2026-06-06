@@ -55,6 +55,9 @@ class OllamaModelProvider(ModelProvider):
         if request.response_format == "json":
             payload["response_format"] = {"type": "json_object"}
 
+        if request.tools:
+            payload["tools"] = request.tools
+
         try:
             async with httpx.AsyncClient(timeout=float(self.timeout_seconds)) as client:
                 response = await client.post(
