@@ -67,7 +67,6 @@ def test_repl_backtab_transition():
 
 @pytest.mark.asyncio
 async def test_run_repl_missing_provider(tmp_path):
-    import pytest
     from nak.cli.repl import run_repl
     from unittest.mock import AsyncMock, patch
     
@@ -221,7 +220,7 @@ async def test_run_repl_custom_timeout(tmp_path):
     with patch("nak.cli.repl.SQLiteMemoryStore") as mock_store_cls, \
          patch("nak.cli.repl.OllamaModelProvider") as mock_provider_cls, \
          patch("nak.cli.repl.PromptSession") as mock_session_cls, \
-         patch("click.echo") as mock_echo:
+         patch("click.echo"):
          
         mock_store = mock_store_cls.return_value
         
