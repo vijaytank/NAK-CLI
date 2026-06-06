@@ -4,7 +4,7 @@ from nak.protocols.model_provider import ModelProvider, ChatRequest, ChatRespons
 from nak.core.errors import AppError
 
 class OllamaModelProvider(ModelProvider):
-    def __init__(self, base_url: str, model_name: str, timeout_seconds: int = 120) -> None:
+    def __init__(self, base_url: str, model_name: str, timeout_seconds: int = 300) -> None:
         self.base_url = base_url.rstrip("/")
         self.model_name = model_name
         self.timeout_seconds = timeout_seconds
@@ -36,7 +36,7 @@ class OllamaModelProvider(ModelProvider):
                         return [m["id"] for m in data["data"]]
         except Exception:
             pass
-        return ["qwen3.5:4b", "deepseek-r1:7b", "llama3"]
+        return []
 
     async def chat(self, request: ChatRequest) -> ChatResponse:
         messages = []

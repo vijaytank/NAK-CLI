@@ -4,7 +4,7 @@ from nak.protocols.model_provider import ModelProvider, ChatRequest, ChatRespons
 from nak.core.errors import AppError
 
 class LlamaModelProvider(ModelProvider):
-    def __init__(self, base_url: str, model_name: str, timeout_seconds: int = 120) -> None:
+    def __init__(self, base_url: str, model_name: str, timeout_seconds: int = 300) -> None:
         self.base_url = base_url.rstrip("/")
         self.model_name = model_name
         self.timeout_seconds = timeout_seconds
@@ -35,7 +35,7 @@ class LlamaModelProvider(ModelProvider):
                         return [m["id"] for m in data["data"]]
         except Exception:
             pass
-        return ["llama-3b", "llama-8b"]
+        return []
 
     async def chat(self, request: ChatRequest) -> ChatResponse:
         messages = []

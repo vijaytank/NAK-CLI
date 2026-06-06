@@ -39,10 +39,12 @@ def test_cli_config_commands(tmp_path):
     # Set workspace option pointing to tmp_path to avoid modifying host settings
     workspace_dir = str(tmp_path)
     
-    # 1. Config show should display default settings
+    # 1. Config show should display no configurations found
     result = runner.invoke(app, ["config", "show", "--workspace", workspace_dir])
     assert result.exit_code == 0
-    assert "ollama" in result.output.lower()
+    normalized_output = result.output.lower().replace("\r", "").replace("\n", " ").replace("  ", " ")
+    assert "no configurations found" in normalized_output
+    assert "use 'nak config [ollama|llama]' to configure a provider" in normalized_output
     
     # 2. Config ollama with custom local URL
     result = runner.invoke(app, ["config", "ollama", "--local", "http://127.0.0.1:11434/v1", "--workspace", workspace_dir])
@@ -60,13 +62,29 @@ def test_cli_config_commands(tmp_path):
     assert "llama" in result.output.lower()
     assert "http://127.0.0.1:8080/v1" in result.output
 
+
+def test_cli_config_set(tmp_path):
+    workspace_dir = str(tmp_path)
+    
+    # 1. Set model_timeout
+    result = runner.invoke(app, ["config", "set", "model_timeout", "600", "--workspace", workspace_dir])
+    assert result.exit_code == 0
+    assert "model_timeout set to: 600" in result.output.lower()
+    
+    # 2. Config show should display Model Timeout: 600 seconds
+    result = runner.invoke(app, ["config", "show", "--workspace", workspace_dir])
+    assert result.exit_code == 0
+    assert "model timeout" in result.output.lower()
+    assert "600" in result.output
+
+
 def test_cli_model_commands(tmp_path):
     workspace_dir = str(tmp_path)
     
-    # 1. Model command should show current model
+    # 1. Model command should show not configured
     result = runner.invoke(app, ["model", "--workspace", workspace_dir])
     assert result.exit_code == 0
-    assert "qwen3.5:4b" in result.output.lower()
+    assert "not configured" in result.output.lower()
     
     # 2. Model set should change the model
     result = runner.invoke(app, ["model", "set", "custom-model:7b", "--workspace", workspace_dir])

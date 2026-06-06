@@ -43,7 +43,8 @@ class Planner:
             "    }\n"
             "  ]\n"
             "}\n"
-            "Do not output any markdown formatting wrapper, any introductory text, or any closing text. Return only the raw JSON."
+            "Do not output any markdown formatting wrapper, any introductory text, or any closing text. Return only the raw JSON.\n"
+            "IMPORTANT: Do not output any thinking process, reasoning, or <think> tags. Start directly with the JSON object."
         )
 
     async def plan(self, prompt: str, workspace_root: str, mode: str, recent_changes: Optional[List[ChangeRecord]] = None) -> Dict[str, Any]:

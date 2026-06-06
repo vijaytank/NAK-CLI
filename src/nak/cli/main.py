@@ -114,20 +114,62 @@ def config_show(
         store = SQLiteMemoryStore(db_path)
         store.connect()
         try:
-            provider = await store.get_config("active_provider") or "ollama"
-            model = await store.get_config("active_model") or "qwen3.5:4b"
-            ollama_url = await store.get_config("ollama_url") or "http://localhost:11434/v1"
-            llama_url = await store.get_config("llama_url") or "http://localhost:8080/v1"
+            provider = await store.get_config("active_provider")
+            model = await store.get_config("active_model")
+            ollama_url = await store.get_config("ollama_url")
+            llama_url = await store.get_config("llama_url")
+            model_timeout = await store.get_config("model_timeout")
             
             console.print("[bold cyan]NAK-CLI Configuration Summary:[/bold cyan]")
-            console.print(f"  Active Provider:  [green]{provider}[/green]")
-            console.print(f"  Active Model:     [green]{model}[/green]")
-            console.print(f"  Ollama Local URL: [green]{ollama_url}[/green]")
-            console.print(f"  Llama Local URL:  [green]{llama_url}[/green]")
+            has_config = False
+            if provider is not None:
+                console.print(f"  Active Provider:  [green]{provider}[/green]")
+                has_config = True
+            if model is not None:
+                console.print(f"  Active Model:     [green]{model}[/green]")
+                has_config = True
+            if ollama_url is not None:
+                console.print(f"  Ollama Local URL: [green]{ollama_url}[/green]")
+                has_config = True
+            if llama_url is not None:
+                console.print(f"  Llama Local URL:  [green]{llama_url}[/green]")
+                has_config = True
+            if model_timeout is not None:
+                console.print(f"  Model Timeout:    [green]{model_timeout} seconds[/green]")
+                has_config = True
+                
+            if not has_config:
+                console.print(r"  No configurations found. Use 'nak config \[ollama|llama]' to configure a provider.")
         finally:
             store.close()
             
     asyncio.run(show_impl())
+
+@config_app.command(name="set")
+def config_set(
+    key: str = typer.Argument(..., help="Configuration parameter key to set (e.g. model_timeout, active_model)"),
+    value: str = typer.Argument(..., help="Configuration parameter value"),
+    workspace: str = typer.Option(
+        ".",
+        "--workspace",
+        "-w",
+        callback=validate_workspace,
+        help="Workspace root path"
+    )
+) -> None:
+    """Set a configuration parameter."""
+    async def set_impl():
+        db_path = os.path.join(workspace, ".nak", "memory.db")
+        store = SQLiteMemoryStore(db_path)
+        store.connect()
+        try:
+            await store.set_config(key, value)
+            console.print(f"{key} set to: {value}")
+        finally:
+            store.close()
+            
+    asyncio.run(set_impl())
+
 
 @config_app.command(name="ollama")
 def config_ollama(
@@ -208,8 +250,11 @@ def model_main(
         store = SQLiteMemoryStore(db_path)
         store.connect()
         try:
-            model = await store.get_config("active_model") or "qwen3.5:4b"
-            console.print(f"Active model: [green]{model}[/green]")
+            model = await store.get_config("active_model")
+            if model is not None:
+                console.print(f"Active model: [green]{model}[/green]")
+            else:
+                console.print("Active model: Not configured")
         finally:
             store.close()
             
@@ -255,15 +300,30 @@ def model_list(
         store = SQLiteMemoryStore(db_path)
         store.connect()
         try:
-            provider_name = await store.get_config("active_provider") or "ollama"
-            ollama_url = await store.get_config("ollama_url") or "http://localhost:11434/v1"
-            llama_url = await store.get_config("llama_url") or "http://localhost:8080/v1"
+            provider_name = await store.get_config("active_provider")
+            if provider_name is None:
+                console.print(r"[red]Error: No active provider configured. Please configure one using 'nak config \[ollama|llama]'.[/red]")
+                raise typer.Exit(code=1)
+                
+            ollama_url = await store.get_config("ollama_url")
+            llama_url = await store.get_config("llama_url")
             
             if provider_name == "llama":
+                if llama_url is None:
+                    console.print("[red]Error: Llama Local URL is not configured. Please run 'nak config llama --local <url>' first.[/red]")
+                    raise typer.Exit(code=1)
                 from nak.model_adapter.providers.llama import LlamaModelProvider
                 provider = LlamaModelProvider(llama_url, "default")
             else:
+                if ollama_url is None:
+                    console.print("[red]Error: Ollama Local URL is not configured. Please run 'nak config ollama --local <url>' first.[/red]")
+                    raise typer.Exit(code=1)
                 provider = OllamaModelProvider(ollama_url, "default")
+                
+            # Check provider health
+            if not await provider.health():
+                console.print(f"[red]Error: Please make sure your {provider_name} is running and connected.[/red]")
+                raise typer.Exit(code=1)
                 
             console.print(f"Fetching models from active provider [cyan]'{provider_name}'[/cyan]...")
             models = await provider.list_models()
