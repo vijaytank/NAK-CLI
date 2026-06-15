@@ -1,6 +1,6 @@
 import asyncio
 import pytest
-from nak.scheduler.scheduler import Scheduler, Task, TaskResult
+from nak.scheduler.scheduler import Scheduler, Task, TaskResult, TaskStatus
 
 @pytest.mark.asyncio
 async def test_scheduler_dag_execution_order():
@@ -93,3 +93,94 @@ async def test_scheduler_skips_dependents_on_failure():
     assert "t2" not in execution_calls
     assert results["t2"].success is False
     assert "skipped" in results["t2"].error_message.lower()
+
+
+def test_task_status_enum():
+    from nak.scheduler.scheduler import TaskStatus
+    assert TaskStatus.PENDING.value == "pending"
+    assert TaskStatus.IN_PROGRESS.value == "in_progress"
+    assert TaskStatus.BLOCKED.value == "blocked"
+    assert TaskStatus.COMPLETED.value == "completed"
+    assert TaskStatus.FAILED.value == "failed"
+    assert TaskStatus.SKIPPED.value == "skipped"
+
+
+@pytest.mark.asyncio
+async def test_scheduler_progress_callback():
+    progress_updates = []
+
+    def on_progress(task_id: str, status: TaskStatus, progress: int):
+        progress_updates.append((task_id, status, progress))
+
+    async def dummy_action():
+        return TaskResult(success=True, output="done", error_message=None)
+
+    task = Task(id="t1", kind="read", depends_on=[], action=dummy_action)
+    scheduler = Scheduler()
+    scheduler.on_progress = on_progress
+    results = await scheduler.run([task])
+
+    assert results["t1"].success is True
+    assert results["t1"].final_status == TaskStatus.COMPLETED
+
+    # We expect at least IN_PROGRESS and COMPLETED updates
+    assert (
+        "t1",
+        TaskStatus.IN_PROGRESS,
+        0,
+    ) in progress_updates
+    assert (
+        "t1",
+        TaskStatus.COMPLETED,
+        100,
+    ) in progress_updates
+
+
+@pytest.mark.asyncio
+async def test_scheduler_skipped_status():
+    progress_updates = []
+
+    def on_progress(task_id: str, status: TaskStatus, progress: int):
+        progress_updates.append((task_id, status, progress))
+
+    async def fail_action():
+        return TaskResult(success=False, output=None, error_message="fail")
+
+    async def dependent_action():
+        return TaskResult(success=True, output="ok", error_message=None)
+
+    t1 = Task(id="t1", kind="read", depends_on=[], action=fail_action)
+    t2 = Task(id="t2", kind="read", depends_on=["t1"], action=dependent_action)
+
+    scheduler = Scheduler()
+    scheduler.on_progress = on_progress
+    results = await scheduler.run([t1, t2])
+
+    assert results["t1"].success is False
+    assert results["t2"].success is False
+    assert results["t2"].final_status == TaskStatus.SKIPPED
+
+    # Ensure t2 updated status to SKIPPED
+    assert (
+        "t2",
+        TaskStatus.SKIPPED,
+        0,
+    ) in progress_updates
+
+
+@pytest.mark.asyncio
+async def test_scheduler_task_timeout():
+    async def slow_action():
+        await asyncio.sleep(0.1)
+        return TaskResult(success=True, output="done", error_message=None)
+
+    # Task with 0.01s timeout running 0.1s action
+    task = Task(id="t1", kind="read", depends_on=[], action=slow_action, timeout_seconds=0.01)
+    scheduler = Scheduler()
+    results = await scheduler.run([task])
+
+    assert results["t1"].success is False
+    assert results["t1"].final_status == TaskStatus.FAILED
+    assert "timeout" in results["t1"].error_message.lower()
+
+

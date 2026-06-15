@@ -8,6 +8,7 @@ from rich.console import Console
 
 from nak.memory.sqlite_store import SQLiteMemoryStore
 from nak.model_adapter.providers.ollama import OllamaModelProvider
+from nak.core.errors import AppError
 
 app = typer.Typer(help="NAK CLI - Local-first AI coding workflow manager")
 console = Console()
@@ -24,6 +25,48 @@ def validate_workspace(workspace: str) -> str:
         raise typer.BadParameter(f"Workspace path '{workspace}' does not exist.")
     if not path.is_dir():
         raise typer.BadParameter(f"Workspace path '{workspace}' is not a directory.")
+    
+    # Symlink/junction detection
+    curr = path
+    while curr != curr.parent:
+        if curr.is_symlink():
+            raise typer.BadParameter(f"Workspace path '{workspace}' contains a symlink at '{curr}'.")
+        curr = curr.parent
+
+    # .nak directory checks
+    nak_dir = path / ".nak"
+    if not nak_dir.exists():
+        import sys
+        import click
+        click.echo(f"Warning: Workspace '.nak' directory is missing in '{workspace}'.")
+        try:
+            if sys.stdin and sys.stdin.isatty():
+                should_create = click.confirm("Would you like to create the '.nak' directory?", default=True)
+            else:
+                should_create = True
+            
+            if should_create:
+                nak_dir.mkdir(parents=True, exist_ok=True)
+                click.echo(f"Created '.nak' directory at '{nak_dir}'.")
+            else:
+                click.echo("Warning: Proceeding without creating '.nak' directory. Some features may fail.")
+        except Exception:
+            nak_dir.mkdir(parents=True, exist_ok=True)
+
+    # Check memory.db writability
+    db_path = nak_dir / "memory.db"
+    try:
+        if db_path.exists():
+            with open(db_path, "a"):
+                pass
+        else:
+            if nak_dir.exists():
+                with open(db_path, "a"):
+                    pass
+                db_path.unlink()
+    except Exception as e:
+        raise typer.BadParameter(f"Workspace database '{db_path}' is not writable. Error: {str(e)}")
+
     return str(path)
 
 @app.command()
@@ -340,7 +383,11 @@ def main() -> None:
     import sys
     if len(sys.argv) == 1:
         sys.argv.append("repl")
-    app()
+    try:
+        app()
+    except AppError as e:
+        console.print(f"[bold red]Error: {e.message}[/bold red]")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

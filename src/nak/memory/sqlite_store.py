@@ -8,6 +8,7 @@ class SQLiteMemoryStore(MemoryStore):
     def __init__(self, db_path: str) -> None:
         self.db_path = db_path
         self.conn: Optional[sqlite3.Connection] = None
+        self._in_explicit_transaction: bool = False
 
     def connect(self) -> None:
         import os
@@ -74,6 +75,8 @@ class SQLiteMemoryStore(MemoryStore):
                 json.dumps(change.metadata),
             ),
         )
+        if not getattr(self, "_in_explicit_transaction", False):
+            self.conn.commit()
         return change.id
 
     async def get_changes(self, workspace: str) -> List[ChangeRecord]:
@@ -134,7 +137,8 @@ class SQLiteMemoryStore(MemoryStore):
             """,
             (session_id, time.time(), role, content)
         )
-        self.conn.commit()
+        if not getattr(self, "_in_explicit_transaction", False):
+            self.conn.commit()
 
     async def get_chat_history(self, session_id: str) -> List[Dict[str, Any]]:
         if not self.conn:
@@ -159,7 +163,8 @@ class SQLiteMemoryStore(MemoryStore):
             "DELETE FROM repl_chat_history WHERE session_id = ?",
             (session_id,)
         )
-        self.conn.commit()
+        if not getattr(self, "_in_explicit_transaction", False):
+            self.conn.commit()
 
     async def get_last_session_id(self) -> Optional[str]:
         if not self.conn:
@@ -190,7 +195,8 @@ class SQLiteMemoryStore(MemoryStore):
             "INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)",
             (key, value)
         )
-        self.conn.commit()
+        if not getattr(self, "_in_explicit_transaction", False):
+            self.conn.commit()
 
     def close(self) -> None:
         if self.conn:

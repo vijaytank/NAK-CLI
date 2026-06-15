@@ -1,3 +1,4 @@
-from nak.scheduler.scheduler import Scheduler, Task, TaskResult
+from nak.scheduler.scheduler import Scheduler, Task, TaskResult, TaskStatus
 
-__all__ = ["Scheduler", "Task", "TaskResult"]
+__all__ = ["Scheduler", "Task", "TaskResult", "TaskStatus"]
+

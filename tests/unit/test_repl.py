@@ -573,3 +573,121 @@ async def test_mcp_tool_calling_loop_in_chat(monkeypatch):
         mock_echo.assert_any_call("Executing tool call: search_codebase({'query': 'HttpMcpClient'})...")
         mock_echo.assert_any_call('Tool Result: {"matches": ["file.py"]}')
         mock_echo.assert_any_call("I found the files containing HttpMcpClient.")
+
+
+@pytest.mark.asyncio
+async def test_execute_task_graph_edit_retry_success(tmp_path):
+    from nak.cli.repl import execute_task_graph
+    from nak.memory.sqlite_store import SQLiteMemoryStore
+    from nak.protocols.model_provider import ChatResponse
+    from unittest.mock import AsyncMock, patch
+    
+    # 1. Setup mock provider
+    mock_provider = AsyncMock()
+    # Mock chat to fail on first attempt, succeed on second attempt
+    response_fail = ChatResponse(
+        content='{"src/main.py": "truncated...',
+        tool_calls=[],
+        finish_reason="length",
+        usage={},
+        raw_provider_response={}
+    )
+    response_success = ChatResponse(
+        content='{"src/main.py": "print(\'hello\')\\n"}',
+        tool_calls=[],
+        finish_reason="stop",
+        usage={},
+        raw_provider_response={}
+    )
+    mock_provider.chat.side_effect = [response_fail, response_success]
+    
+    # 2. Setup store
+    db_path = tmp_path / "memory.db"
+    store = SQLiteMemoryStore(str(db_path))
+    store.connect()
+    
+    # 3. Create plan graph
+    plan_graph = {
+        "goal": "Write code with retry",
+        "workspace": str(tmp_path),
+        "mode": "workspace-write",
+        "tasks": [
+            {
+                "id": "t1",
+                "kind": "edit",
+                "action": "create src/main.py",
+                "depends_on": [],
+                "tools": ["write_file"],
+                "read_paths": [],
+                "write_paths": ["src/main.py"]
+            }
+        ]
+    }
+    
+    # We patch click.echo to verify it printed warning
+    with patch("click.echo") as mock_echo:
+        # 4. Execute
+        await execute_task_graph(plan_graph, str(tmp_path), mock_provider, store)
+        
+        # Verify click.echo warning was printed
+        any_warning = any("retry" in str(arg).lower() or "attempt" in str(arg).lower() for call in mock_echo.call_args_list for arg in call[0])
+        assert any_warning
+    
+    # Check that file was written to disk
+    main_py_path = tmp_path / "src" / "main.py"
+    assert main_py_path.exists()
+    assert main_py_path.read_text(encoding="utf-8") == "print('hello')\n"
+    
+    store.close()
+
+
+@pytest.mark.asyncio
+async def test_execute_task_graph_edit_retry_failure(tmp_path):
+    from nak.cli.repl import execute_task_graph
+    from nak.memory.sqlite_store import SQLiteMemoryStore
+    from nak.protocols.model_provider import ChatResponse
+    from unittest.mock import AsyncMock
+    
+    # 1. Setup mock provider returning invalid JSON twice
+    mock_provider = AsyncMock()
+    response_fail = ChatResponse(
+        content='{"src/main.py": "truncated...',
+        tool_calls=[],
+        finish_reason="length",
+        usage={},
+        raw_provider_response={}
+    )
+    mock_provider.chat.side_effect = [response_fail, response_fail]
+    
+    # 2. Setup store
+    db_path = tmp_path / "memory.db"
+    store = SQLiteMemoryStore(str(db_path))
+    store.connect()
+    
+    # 3. Create plan graph
+    plan_graph = {
+        "goal": "Write code with failed retry",
+        "workspace": str(tmp_path),
+        "mode": "workspace-write",
+        "tasks": [
+            {
+                "id": "t1",
+                "kind": "edit",
+                "action": "create src/main.py",
+                "depends_on": [],
+                "tools": ["write_file"],
+                "read_paths": [],
+                "write_paths": ["src/main.py"]
+            }
+        ]
+    }
+    
+    # 4. Execute
+    await execute_task_graph(plan_graph, str(tmp_path), mock_provider, store)
+    
+    # Check that file was NOT written to disk
+    main_py_path = tmp_path / "src" / "main.py"
+    assert not main_py_path.exists()
+    
+    store.close()
+

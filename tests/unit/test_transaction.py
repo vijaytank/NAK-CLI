@@ -80,8 +80,10 @@ async def test_transaction_rollback_on_error(temp_db_and_audit):
     changes = await store.get_changes("ws")
     assert len(changes) == 0
     
-    # Verify audit log rolled back to initial content (truncated)
-    assert audit_path.read_text() == "initial log line\n"
+    # Verify audit log rolled back to initial content (truncated) and appended TRANSACTION_ROLLBACK entry
+    log_text = audit_path.read_text()
+    assert log_text.startswith("initial log line\n")
+    assert "TRANSACTION_ROLLBACK" in log_text
 
 @pytest.mark.asyncio
 async def test_repl_chat_history(temp_db_and_audit):
@@ -116,3 +118,65 @@ async def test_repl_chat_history(temp_db_and_audit):
 
     # Get last session id
     assert await store.get_last_session_id() == "session_2"
+
+
+@pytest.mark.asyncio
+async def test_transaction_id_and_logs(temp_db_and_audit):
+    store, logger, audit_path = temp_db_and_audit
+
+    async with ExecuteTransaction(store, logger) as tx:
+        assert tx.transaction_id is not None
+        # Should be a UUID string
+        import uuid
+        uuid.UUID(tx.transaction_id)
+
+    # After successful transaction, verify that TRANSACTION_COMMIT was logged in audit entries
+    entries = logger.read_entries()
+    assert len(entries) == 1
+    assert entries[0]["action_type"] == "TRANSACTION_COMMIT"
+    assert entries[0]["metadata"]["transaction_id"] == tx.transaction_id
+
+
+@pytest.mark.asyncio
+async def test_transaction_rollback_log(temp_db_and_audit):
+    store, logger, audit_path = temp_db_and_audit
+
+    tx_id = None
+    try:
+        async with ExecuteTransaction(store, logger) as tx:
+            tx_id = tx.transaction_id
+            raise ValueError("rollback me")
+    except ValueError:
+        pass
+
+    # Audit log should contain TRANSACTION_ROLLBACK even after rollback/truncation
+    # Wait, if we truncate the log to the size before the transaction, does the rollback entry survive?
+    # Ah! The rollback log entry is written AFTER or BEFORE truncation?
+    # If we truncate, any entries written DURING the transaction are deleted, but the rollback entry
+    # itself should be written AFTER we truncate (or we don't truncate it away).
+    # Yes! The rollback entry should be written after truncation so it is preserved in the audit log.
+    entries = logger.read_entries()
+    assert len(entries) == 1
+    assert entries[0]["action_type"] == "TRANSACTION_ROLLBACK"
+    assert entries[0]["metadata"]["transaction_id"] == tx_id
+
+
+@pytest.mark.asyncio
+async def test_transaction_truncation_failure_handling(temp_db_and_audit, caplog):
+    store, logger, audit_path = temp_db_and_audit
+
+    # Mock truncate_to_size to raise an OSError
+    def raise_error(size):
+        raise OSError("disk full")
+    logger.truncate_to_size = raise_error
+
+    import logging
+    with caplog.at_level(logging.ERROR):
+        try:
+            async with ExecuteTransaction(store, logger):
+                raise ValueError("trigger rollback")
+        except ValueError:
+            pass
+
+        assert any("rollback" in record.message.lower() or "truncate" in record.message.lower() for record in caplog.records)
+

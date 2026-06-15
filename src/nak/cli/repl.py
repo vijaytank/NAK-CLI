@@ -14,7 +14,7 @@ from nak.memory.sqlite_store import SQLiteMemoryStore
 from nak.model_adapter.providers.ollama import OllamaModelProvider
 from nak.planner.planner import Planner
 from nak.protocols.model_provider import ChatRequest, ModelProvider
-from nak.scheduler.scheduler import Scheduler, Task, TaskResult
+from nak.scheduler.scheduler import Scheduler, Task, TaskResult, TaskStatus
 from nak.workspace_fs.fs import WorkspaceFS
 from nak.protocols.memory_store import ChangeRecord
 from nak.mcp_client.base import StdioMcpClient, HttpMcpClient
@@ -54,6 +54,12 @@ async def execute_task_graph(
     store: SQLiteMemoryStore
 ) -> None:
     scheduler = Scheduler()
+
+    def show_progress(task_id: str, status: TaskStatus, progress: int):
+        icon = {"in_progress": "⏳", "completed": "✅", "failed": "❌", "skipped": "⏭️"}.get(status.value, "•")
+        click.echo(f"  {icon} Task {task_id}: {status.value} ({progress}%)")
+
+    scheduler.on_progress = show_progress
     fs = WorkspaceFS(workspace_root)
     task_outputs: Dict[str, str] = {}
     files_written = set()
@@ -78,14 +84,14 @@ async def execute_task_graph(
                     if any(tool in ("ls", "list_dir") for tool in tools):
                         dir_to_list = read_paths[0] if read_paths else "."
                         try:
-                            items = fs.list_dir(dir_to_list)
+                            items = await asyncio.to_thread(fs.list_dir, dir_to_list)
                             output_parts.append(f"Directory listing of '{dir_to_list}': {', '.join(items)}")
                         except Exception as e:
                             output_parts.append(f"Failed to list directory '{dir_to_list}': {str(e)}")
                     
                     for p in read_paths:
                         try:
-                            content = fs.read_file(p)
+                            content = await asyncio.to_thread(fs.read_file, p)
                             output_parts.append(f"File content of '{p}':\n{content}")
                         except Exception as e:
                             output_parts.append(f"Failed to read file '{p}': {str(e)}")
@@ -103,7 +109,7 @@ async def execute_task_graph(
                     current_contents = ""
                     for p in write_paths:
                         try:
-                            content = fs.read_file(p)
+                            content = await asyncio.to_thread(fs.read_file, p)
                             current_contents += f"--- Current Content of '{p}' ---\n{content}\n"
                         except FileNotFoundError:
                             pass
@@ -131,39 +137,58 @@ async def execute_task_graph(
                         "}\n"
                     )
                     
-                    chat_req = ChatRequest(
-                       system="You are a precise AI code generator. Return only raw JSON mapping relative file paths to their complete contents.",
-                       prompt=prompt,
-                       response_format="json",
-                       tools=[],
-                       max_tokens=4096,
-                       temperature=0.0,
-                       metadata={}
-                    )
-                    response = await provider.chat(chat_req)
-                    
-                    content = response.content.strip()
-                    if content.startswith("```"):
-                        lines = content.splitlines()
-                        if lines[0].startswith("```"):
-                            lines = lines[1:]
-                        if lines and lines[-1].startswith("```"):
-                            lines = lines[:-1]
-                        content = "\n".join(lines).strip()
+                    max_attempts = 2
+                    files_map = None
+                    last_error = None
+                    current_prompt = prompt
+                    response = None
+
+                    for attempt in range(1, max_attempts + 1):
+                        chat_req = ChatRequest(
+                           system="You are a precise AI code generator. Return only raw JSON mapping relative file paths to their complete contents.",
+                           prompt=current_prompt,
+                           response_format="json",
+                           tools=[],
+                           max_tokens=4096,
+                           temperature=0.0,
+                           metadata={}
+                        )
+                        response = await provider.chat(chat_req)
                         
-                    try:
-                        files_map = json.loads(content)
-                        if not isinstance(files_map, dict):
-                            raise ValueError("Expected a JSON object mapping file paths to content")
-                    except Exception as e:
+                        content = response.content.strip()
+                        if content.startswith("```"):
+                            lines = content.splitlines()
+                            if lines[0].startswith("```"):
+                                lines = lines[1:]
+                            if lines and lines[-1].startswith("```"):
+                                lines = lines[:-1]
+                            content = "\n".join(lines).strip()
+                            
+                        try:
+                            files_map = json.loads(content)
+                            if not isinstance(files_map, dict):
+                                raise ValueError("Expected a JSON object mapping file paths to content")
+                            break
+                        except Exception as e:
+                            last_error = e
+                            if attempt < max_attempts:
+                                click.echo(f"    [Warning] JSON parsing failed on attempt {attempt} due to: {str(e)}. Retrying with truncation warning...")
+                                current_prompt = prompt + (
+                                    "\n\n[WARNING: Your previous response was truncated or returned invalid JSON. "
+                                    "Please make sure your JSON is complete, valid, and that you do not generate excessive duplicate/repetitive lines "
+                                    "that exceed the token limit. Keep the code clean and concise.]"
+                                )
+
+                    if files_map is None:
+                        resp_content = response.content if response else ""
                         return TaskResult(
                             success=False,
                             output=None,
-                            error_message=f"Model failed to return valid JSON object. Error: {str(e)}. Content: {response.content}"
+                            error_message=f"Model failed to return valid JSON object after {max_attempts} attempts. Error: {str(last_error)}. Content: {resp_content}"
                         )
                         
                     for path, body in files_map.items():
-                        fs.write_file(path, body)
+                        await asyncio.to_thread(fs.write_file, path, body)
                         files_written.add(path)
                         click.echo(f"    [File Written] {path}")
                         
@@ -176,7 +201,7 @@ async def execute_task_graph(
                     if any(tool in ("cat", "read") for tool in tools):
                         for p in read_paths:
                             try:
-                                content = fs.read_file(p)
+                                content = await asyncio.to_thread(fs.read_file, p)
                                 click.echo(f"\n--- Content of '{p}' ---")
                                 click.echo(content)
                                 click.echo("-------------------------\n")

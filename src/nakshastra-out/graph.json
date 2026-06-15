@@ -1,0 +1,577 @@
+{
+  "nodes": [
+    {
+      "id": "nak/model_adapter/__init__.py",
+      "label": "__init__.py",
+      "type": "file"
+    },
+    {
+      "id": "nak/core/__init__.py",
+      "label": "__init__.py",
+      "type": "file"
+    },
+    {
+      "id": "nak/model_adapter/providers/__init__.py",
+      "label": "__init__.py",
+      "type": "file"
+    },
+    {
+      "id": "nak/patch_engine/__init__.py",
+      "label": "__init__.py",
+      "type": "file"
+    },
+    {
+      "id": "nak/workspace_fs/__init__.py",
+      "label": "__init__.py",
+      "type": "file"
+    },
+    {
+      "id": "nak/audit/__init__.py",
+      "label": "__init__.py",
+      "type": "file"
+    },
+    {
+      "id": "nak/cli/__init__.py",
+      "label": "__init__.py",
+      "type": "file"
+    },
+    {
+      "id": "nak/protocols/__init__.py",
+      "label": "__init__.py",
+      "type": "file"
+    },
+    {
+      "id": "nak/scheduler/__init__.py",
+      "label": "__init__.py",
+      "type": "file"
+    },
+    {
+      "id": "nak/planner/__init__.py",
+      "label": "__init__.py",
+      "type": "file"
+    },
+    {
+      "id": "nak/mcp_client/__init__.py",
+      "label": "__init__.py",
+      "type": "file"
+    },
+    {
+      "id": "nak/validator/__init__.py",
+      "label": "__init__.py",
+      "type": "file"
+    },
+    {
+      "id": "nak/memory/__init__.py",
+      "label": "__init__.py",
+      "type": "file"
+    },
+    {
+      "id": "nak/scheduler/scheduler.py",
+      "label": "scheduler.py",
+      "type": "file"
+    },
+    {
+      "id": "asyncio",
+      "label": "asyncio",
+      "type": "stub"
+    },
+    {
+      "id": "dataclasses",
+      "label": "dataclasses",
+      "type": "stub"
+    },
+    {
+      "id": "enum",
+      "label": "enum",
+      "type": "stub"
+    },
+    {
+      "id": "nak.audit.audit_log",
+      "label": "nak.audit.audit_log",
+      "type": "stub"
+    },
+    {
+      "id": "nak.cli.main",
+      "label": "nak.cli.main",
+      "type": "stub"
+    },
+    {
+      "id": "nak.core.errors",
+      "label": "nak.core.errors",
+      "type": "stub"
+    },
+    {
+      "id": "nak.core.session",
+      "label": "nak.core.session",
+      "type": "stub"
+    },
+    {
+      "id": "nak.mcp_client.base",
+      "label": "nak.mcp_client.base",
+      "type": "stub"
+    },
+    {
+      "id": "nak.memory.sqlite_store",
+      "label": "nak.memory.sqlite_store",
+      "type": "stub"
+    },
+    {
+      "id": "nak.memory.transaction",
+      "label": "nak.memory.transaction",
+      "type": "stub"
+    },
+    {
+      "id": "nak.model_adapter.circuit_breaker",
+      "label": "nak.model_adapter.circuit_breaker",
+      "type": "stub"
+    },
+    {
+      "id": "nak.model_adapter.providers.llama",
+      "label": "nak.model_adapter.providers.llama",
+      "type": "stub"
+    },
+    {
+      "id": "nak.model_adapter.providers.ollama",
+      "label": "nak.model_adapter.providers.ollama",
+      "type": "stub"
+    },
+    {
+      "id": "nak.model_adapter.registry",
+      "label": "nak.model_adapter.registry",
+      "type": "stub"
+    },
+    {
+      "id": "nak.patch_engine.engine",
+      "label": "nak.patch_engine.engine",
+      "type": "stub"
+    },
+    {
+      "id": "nak.planner.planner",
+      "label": "nak.planner.planner",
+      "type": "stub"
+    },
+    {
+      "id": "nak.protocols.approval_policy",
+      "label": "nak.protocols.approval_policy",
+      "type": "stub"
+    },
+    {
+      "id": "nak.protocols.mcp_transport",
+      "label": "nak.protocols.mcp_transport",
+      "type": "stub"
+    },
+    {
+      "id": "nak.protocols.memory_store",
+      "label": "nak.protocols.memory_store",
+      "type": "stub"
+    },
+    {
+      "id": "nak.protocols.model_provider",
+      "label": "nak.protocols.model_provider",
+      "type": "stub"
+    },
+    {
+      "id": "nak.protocols.patch_engine",
+      "label": "nak.protocols.patch_engine",
+      "type": "stub"
+    },
+    {
+      "id": "nak.protocols.validator",
+      "label": "nak.protocols.validator",
+      "type": "stub"
+    },
+    {
+      "id": "nak.validator.autodetect",
+      "label": "nak.validator.autodetect",
+      "type": "stub"
+    },
+    {
+      "id": "nak.workspace_fs.fs",
+      "label": "nak.workspace_fs.fs",
+      "type": "stub"
+    },
+    {
+      "id": "typing",
+      "label": "typing",
+      "type": "stub"
+    },
+    {
+      "id": "nak/scheduler/scheduler.py::TaskStatus",
+      "label": "scheduler.py::TaskStatus",
+      "type": "symbol"
+    },
+    {
+      "id": "nak/scheduler/scheduler.py::Task",
+      "label": "scheduler.py::Task",
+      "type": "symbol"
+    },
+    {
+      "id": "nak/scheduler/scheduler.py::TaskResult",
+      "label": "scheduler.py::TaskResult",
+      "type": "symbol"
+    },
+    {
+      "id": "nak/scheduler/scheduler.py::Scheduler",
+      "label": "scheduler.py::Scheduler",
+      "type": "symbol"
+    },
+    {
+      "id": "nak/scheduler/scheduler.py::__init__",
+      "label": "scheduler.py::__init__",
+      "type": "symbol"
+    },
+    {
+      "id": "nak/scheduler/scheduler.py::update_task_status",
+      "label": "scheduler.py::update_task_status",
+      "type": "symbol"
+    },
+    {
+      "id": "nak/scheduler/scheduler.py::run",
+      "label": "scheduler.py::run",
+      "type": "symbol"
+    },
+    {
+      "id": "nak/scheduler/scheduler.py::execute_task",
+      "label": "scheduler.py::execute_task",
+      "type": "symbol"
+    }
+  ],
+  "edges": [
+    {
+      "source": "nak/model_adapter/__init__.py",
+      "target": "nak.model_adapter.circuit_breaker",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/model_adapter/__init__.py",
+      "target": "nak.model_adapter.registry",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/core/__init__.py",
+      "target": "nak.core.errors",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/core/__init__.py",
+      "target": "nak.core.session",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/model_adapter/providers/__init__.py",
+      "target": "nak.model_adapter.providers.llama",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/model_adapter/providers/__init__.py",
+      "target": "nak.model_adapter.providers.ollama",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/patch_engine/__init__.py",
+      "target": "nak.patch_engine.engine",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/workspace_fs/__init__.py",
+      "target": "nak.workspace_fs.fs",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/audit/__init__.py",
+      "target": "nak.audit.audit_log",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/cli/__init__.py",
+      "target": "nak.cli.main",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/protocols/__init__.py",
+      "target": "nak.protocols.approval_policy",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/protocols/__init__.py",
+      "target": "nak.protocols.mcp_transport",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/protocols/__init__.py",
+      "target": "nak.protocols.memory_store",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/protocols/__init__.py",
+      "target": "nak.protocols.model_provider",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/protocols/__init__.py",
+      "target": "nak.protocols.patch_engine",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/protocols/__init__.py",
+      "target": "nak.protocols.validator",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/scheduler/__init__.py",
+      "target": "nak/scheduler/scheduler.py",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/planner/__init__.py",
+      "target": "nak.planner.planner",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/mcp_client/__init__.py",
+      "target": "nak.mcp_client.base",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/validator/__init__.py",
+      "target": "nak.validator.autodetect",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/memory/__init__.py",
+      "target": "nak.memory.sqlite_store",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/memory/__init__.py",
+      "target": "nak.memory.transaction",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/scheduler/scheduler.py",
+      "target": "asyncio",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/scheduler/scheduler.py",
+      "target": "dataclasses",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/scheduler/scheduler.py",
+      "target": "enum",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/scheduler/scheduler.py",
+      "target": "typing",
+      "type": "import",
+      "weight": 0.8
+    },
+    {
+      "source": "nak/scheduler/scheduler.py",
+      "target": "nak/scheduler/scheduler.py::TaskStatus",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "nak/scheduler/scheduler.py",
+      "target": "nak/scheduler/scheduler.py::Task",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "nak/scheduler/scheduler.py",
+      "target": "nak/scheduler/scheduler.py::TaskResult",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "nak/scheduler/scheduler.py",
+      "target": "nak/scheduler/scheduler.py::Scheduler",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "nak/scheduler/scheduler.py",
+      "target": "nak/scheduler/scheduler.py::__init__",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "nak/scheduler/scheduler.py",
+      "target": "nak/scheduler/scheduler.py::update_task_status",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "nak/scheduler/scheduler.py",
+      "target": "nak/scheduler/scheduler.py::run",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "nak/scheduler/scheduler.py",
+      "target": "nak/scheduler/scheduler.py::execute_task",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "nak/scheduler/scheduler.py::Task",
+      "target": "nak/scheduler/scheduler.py::TaskStatus",
+      "type": "calls",
+      "weight": 0.5
+    },
+    {
+      "source": "nak/scheduler/scheduler.py::Task",
+      "target": "nak/scheduler/scheduler.py::TaskResult",
+      "type": "calls",
+      "weight": 0.5
+    },
+    {
+      "source": "nak/scheduler/scheduler.py::TaskResult",
+      "target": "nak/scheduler/scheduler.py::TaskStatus",
+      "type": "calls",
+      "weight": 0.5
+    },
+    {
+      "source": "nak/scheduler/scheduler.py::Scheduler",
+      "target": "nak/scheduler/scheduler.py::TaskStatus",
+      "type": "calls",
+      "weight": 0.5
+    },
+    {
+      "source": "nak/scheduler/scheduler.py::Scheduler",
+      "target": "nak/scheduler/scheduler.py::Task",
+      "type": "calls",
+      "weight": 0.5
+    },
+    {
+      "source": "nak/scheduler/scheduler.py::Scheduler",
+      "target": "nak/scheduler/scheduler.py::TaskResult",
+      "type": "calls",
+      "weight": 0.5
+    },
+    {
+      "source": "nak/scheduler/scheduler.py::Scheduler",
+      "target": "nak/scheduler/scheduler.py::__init__",
+      "type": "calls",
+      "weight": 0.5
+    },
+    {
+      "source": "nak/scheduler/scheduler.py::Scheduler",
+      "target": "nak/scheduler/scheduler.py::update_task_status",
+      "type": "calls",
+      "weight": 0.5
+    },
+    {
+      "source": "nak/scheduler/scheduler.py::Scheduler",
+      "target": "nak/scheduler/scheduler.py::run",
+      "type": "calls",
+      "weight": 0.5
+    },
+    {
+      "source": "nak/scheduler/scheduler.py::Scheduler",
+      "target": "nak/scheduler/scheduler.py::execute_task",
+      "type": "calls",
+      "weight": 0.5
+    },
+    {
+      "source": "nak/scheduler/scheduler.py::__init__",
+      "target": "nak/scheduler/scheduler.py::Task",
+      "type": "calls",
+      "weight": 0.5
+    },
+    {
+      "source": "nak/scheduler/scheduler.py::update_task_status",
+      "target": "nak/scheduler/scheduler.py::TaskStatus",
+      "type": "calls",
+      "weight": 0.5
+    },
+    {
+      "source": "nak/scheduler/scheduler.py::update_task_status",
+      "target": "nak/scheduler/scheduler.py::TaskResult",
+      "type": "calls",
+      "weight": 0.5
+    },
+    {
+      "source": "nak/scheduler/scheduler.py::run",
+      "target": "nak/scheduler/scheduler.py::TaskStatus",
+      "type": "calls",
+      "weight": 0.5
+    },
+    {
+      "source": "nak/scheduler/scheduler.py::run",
+      "target": "nak/scheduler/scheduler.py::Task",
+      "type": "calls",
+      "weight": 0.5
+    },
+    {
+      "source": "nak/scheduler/scheduler.py::run",
+      "target": "nak/scheduler/scheduler.py::TaskResult",
+      "type": "calls",
+      "weight": 0.5
+    },
+    {
+      "source": "nak/scheduler/scheduler.py::run",
+      "target": "nak/scheduler/scheduler.py::update_task_status",
+      "type": "calls",
+      "weight": 0.5
+    },
+    {
+      "source": "nak/scheduler/scheduler.py::run",
+      "target": "nak/scheduler/scheduler.py::execute_task",
+      "type": "calls",
+      "weight": 0.5
+    },
+    {
+      "source": "nak/scheduler/scheduler.py::execute_task",
+      "target": "nak/scheduler/scheduler.py::TaskStatus",
+      "type": "calls",
+      "weight": 0.5
+    },
+    {
+      "source": "nak/scheduler/scheduler.py::execute_task",
+      "target": "nak/scheduler/scheduler.py::Task",
+      "type": "calls",
+      "weight": 0.5
+    },
+    {
+      "source": "nak/scheduler/scheduler.py::execute_task",
+      "target": "nak/scheduler/scheduler.py::TaskResult",
+      "type": "calls",
+      "weight": 0.5
+    },
+    {
+      "source": "nak/scheduler/scheduler.py::execute_task",
+      "target": "nak/scheduler/scheduler.py::update_task_status",
+      "type": "calls",
+      "weight": 0.5
+    }
+  ]
+}
